@@ -1,0 +1,46 @@
+import torch
+import torch.nn as nn
+import torchvision.transforms as transforms
+from torchvision import models, datasets
+from PIL import Image
+
+# Load pre-trained model
+class ImageCaptioningModel(nn.Module):
+    def __init__(self):
+        super(ImageCaptioningModel, self).__init__()
+        # Load a pre-trained image classification model as the encoder
+        self.encoder = models.resnet18(pretrained=True)
+        self.encoder = nn.Sequential(*list(self.encoder.children())[:-2])
+        
+        # Add your captioning decoder here
+        
+    def forward(self, images):
+        features = self.encoder(images)
+        # Pass features through the decoder and generate captions
+        
+        return captions
+
+# Load and preprocess image
+def load_image(image_path):
+    image = Image.open(image_path)
+    preprocess = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    image = preprocess(image).unsqueeze(0)
+    return image
+
+# Example usage
+image_path = 'path_to_your_image.jpg'
+image = load_image(image_path)
+
+# Initialize the model
+model = ImageCaptioningModel()
+
+# Generate captions
+with torch.no_grad():
+    captions = model(image)
+
+print(captions)
