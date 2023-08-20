@@ -1,0 +1,35 @@
+import cv2
+import dlib
+
+# Load the pre-trained face detection model from dlib
+detector = dlib.get_frontal_face_detector()
+
+# Load the pre-trained face recognition model from dlib
+face_recognizer = dlib.face_recognition_model_v1("shape_predictor_68_face_landmarks.dat")
+
+# Load an image for testing
+image_path = "test_image.jpg"
+image = cv2.imread(image_path)
+
+# Convert the image to grayscale for face detection
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Detect faces in the grayscale image
+faces = detector(gray)
+
+# Loop through each detected face
+for face in faces:
+    # Get facial landmarks
+    landmarks = face_recognizer(image, face)
+
+    # Get the face descriptor
+    face_descriptor = landmarks[0].descriptor
+
+    # Draw a rectangle around the detected face
+    x, y, w, h = face.left(), face.top(), face.width(), face.height()
+    cv2.rectangle(image, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+# Display the image with detected faces
+cv2.imshow("Face Detection", image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
