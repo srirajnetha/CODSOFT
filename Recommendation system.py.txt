@@ -1,0 +1,42 @@
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Sample user-item interaction data
+data = {
+    'user': ['User1', 'User1', 'User2', 'User3', 'User3'],
+    'item': ['Item1', 'Item2', 'Item1', 'Item2', 'Item3'],
+    'rating': [5, 4, 3, 4, 5]
+}
+
+df = pd.DataFrame(data)
+
+# Create a user-item matrix
+user_item_matrix = df.pivot(index='user', columns='item', values='rating').fillna(0)
+
+# Calculate cosine similarity between users
+user_similarity = cosine_similarity(user_item_matrix)
+
+# Recommend items for a given user
+def recommend_items(user, num_recommendations=2):
+    user_index = user_item_matrix.index.get_loc(user)
+    user_similarities = user_similarity[user_index]
+    
+    # Find users similar to the target user
+    similar_users = user_similarity.argsort()[user_index][::-1][1:]  # Exclude the user itself
+    
+    recommendations = []
+    
+    for item in user_item_matrix.columns:
+        if user_item_matrix.loc[user, item] == 0:
+            item_ratings = user_item_matrix.iloc[similar_users, :][item]
+            weighted_ratings = item_ratings * user_similarities[similar_users]
+            predicted_rating = weighted_ratings.sum() / (user_similarities[similar_users].sum() + 1e-8)
+            recommendations.append((item, predicted_rating))
+    
+    recommendations.sort(key=lambda x: x[1], reverse=True)
+    return recommendations[:num_recommendations]
+
+# Example usage
+target_user = 'User1'
+recommended_items = recommend_items(target_user)
+print(f"Recommended items for {target_user}: {recommended_items}")
